@@ -50,9 +50,9 @@
             Primera respuesta
           </p>
           <p
-            class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+            id="first_responses" class="text-lg font-semibold text-gray-700 dark:text-gray-200">
             <!-- START - first_responses -->
-            YYY
+            {{ first_responses }}
             <!-- END - first_responses -->
           </p>
         </div>
@@ -75,7 +75,7 @@
           <p
             class="text-lg font-semibold text-gray-700 dark:text-gray-200">
             <!-- START - last_responses -->
-            ZZZ
+            {{ last_responses }}
             <!-- END - last_responses -->
           </p>
         </div>
@@ -100,7 +100,7 @@
           <p
             class="text-lg font-semibold text-gray-700 dark:text-gray-200">
             <!-- START - high_rate_responses -->
-            VVV
+            {{ high_rate_responses }} ( {{ high_rate_responses_count }} )
             <!-- END - high_rate_responses -->
           </p>
         </div>
@@ -132,7 +132,7 @@
               </td>
               <td class="px-4 py-3 text-sm">
                 <!-- START - row.saved -->
-                {{ row.date }}
+                {{ row.saved }}
                 <!-- END - row.saved -->
               </td>
             </tr>
@@ -165,7 +165,7 @@
       <div
         class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
-          Respuestas por día
+          Reservaciones por mes
         </h4>
         <canvas id="line"></canvas>
       </div>

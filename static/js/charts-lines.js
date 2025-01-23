@@ -4,38 +4,19 @@
 const lineConfig = {
   type: 'line',
   data: {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    labels: [], // Meses (X-axis)
     datasets: [
       {
-        label: 'Organic',
-        /**
-         * These colors come from Tailwind CSS palette
-         * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
-         */
+        label: 'Reservaciones por Mes',
         backgroundColor: '#0694a2',
         borderColor: '#0694a2',
-        data: [43, 48, 40, 54, 67, 73, 70],
+        data: [], // Contador de reservaciones por mes
         fill: false,
-      },
-      {
-        label: 'Paid',
-        fill: false,
-        /**
-         * These colors come from Tailwind CSS palette
-         * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
-         */
-        backgroundColor: '#7e3af2',
-        borderColor: '#7e3af2',
-        data: [24, 50, 64, 74, 52, 51, 65],
       },
     ],
   },
   options: {
     responsive: true,
-    /**
-     * Default legends are ugly and impossible to style.
-     * See examples in charts.html to add your own legends
-     *  */
     legend: {
       display: false,
     },
@@ -52,20 +33,75 @@ const lineConfig = {
         display: true,
         scaleLabel: {
           display: true,
-          labelString: 'Month',
+          labelString: 'Mes',
         },
       },
       y: {
         display: true,
         scaleLabel: {
           display: true,
-          labelString: 'Value',
+          labelString: 'Reservaciones',
+        },
+        ticks: {
+          beginAtZero: true, // Asegura que el eje Y comience en 0
+          stepSize: 1, // Establece que los ticks en el eje Y sean enteros
+          precision: 0, // Elimina los decimales
         },
       },
     },
   },
-}
+};
 
-// change this to the id of your chart element in HMTL
-const lineCtx = document.getElementById('line')
-window.myLine = new Chart(lineCtx, lineConfig)
+// Cambiar al id de tu elemento de gráfico en HTML
+const lineCtx = document.getElementById('line');
+window.myLine = new Chart(lineCtx, lineConfig);
+
+// Función para procesar el JSON y agrupar por mes
+countReservationsByMonth = (data) => {
+  // Inicializamos un objeto para contar las reservaciones por mes
+  const monthCounts = {};
+
+  Object.values(data).forEach(record => {
+    const reservationDate = record.date; // 'YYYY-MM-DD'
+    console.log(reservationDate)
+    if (!reservationDate) return;
+
+    // Extraemos el año y el mes de la fecha
+    const [year, month] = reservationDate.split('-'); // 'YYYY-MM-DD' -> ['YYYY', 'MM']
+    const yearMonth = `${year}-${month}`; // Formato 'YYYY-MM' para representar cada mes
+
+    // Incrementamos el contador correspondiente para el mes
+    if (monthCounts[yearMonth]) {
+      monthCounts[yearMonth]++;
+    } else {
+      monthCounts[yearMonth] = 1;
+    }
+    console.log(monthCounts)
+  });
+
+  // Preparamos las etiquetas para el eje X (meses) y los conteos de reservaciones
+  const labels = Object.keys(monthCounts).sort(); // Ordenar por año y mes
+  const counts = labels.map(month => monthCounts[month]);
+
+  return { labels, counts };
+};
+
+// Función para actualizar el gráfico con los datos procesados
+updateChart = () => {
+  fetch('/api/v1/landing') // Asegúrate de que este endpoint esté retornando los datos correctamente
+    .then(response => response.json())
+    .then(data => {
+      const { labels, counts } = countReservationsByMonth(data);
+
+      // Actualizamos los labels y los datos del gráfico
+      window.myLine.data.labels = labels;
+      window.myLine.data.datasets[0].data = counts;
+
+      // Actualizamos el gráfico
+      window.myLine.update();
+    })
+    .catch(error => console.error('Error:', error));
+};
+
+// Llamar a la función para actualizar el gráfico
+updateChart();

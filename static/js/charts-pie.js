@@ -11,7 +11,7 @@ const pieConfig = {
          * These colors come from Tailwind CSS palette
          * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
          */
-        backgroundColor: ['#0694a2', '#1c64f2', '#7e3af2'],
+        backgroundColor: ['#0694a2', '#1c64f2', '#ff5733'],
         label: 'Dataset 1',
       },
     ],
@@ -43,27 +43,51 @@ countCommentsByHour = (data) => {
   const counts = [0, 0, 0];
 
   Object.values(data).forEach(record => {
+      const savedTime = record.saved;
+      if (!savedTime) {
+          return;
+      }
 
-    const savedTime = record.saved;
-    if (!savedTime) {
-      return;
-    }
+      // Convertir a formato de hora AM/PM
+      const formattedTime = savedTime.replace('\xa0',' ').replace('a. m.', 'AM').replace('p. m.', 'PM');
+         
+      // Crear objeto Date con la cadena de tiempo
+      console.log('replace of dt: ', formattedTime.replace(/(\d{2}\/\d{2}\/\d{4}), (\d{2}):(\d{2}):(\d{2}) (AM|PM)/, '$1 $2:$3:$4 $5'))
+      const argumentParse = formattedTime.replace(/(\d{1,2}\/\d{1,2}\/\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)/, 
+        (match, datePart, hour, minutes, seconds, period) => {
+          // Reorganizar la fecha a formato ISO (YYYY-MM-DD)
+          const [day, month, year] = datePart.split('/').map(num => num.padStart(2, '0')); // Asegura que el día y mes tengan 2 dígitos
+          let hour24 = parseInt(hour, 10);
+          
+          // Convertir la hora a formato 24 horas según AM/PM
+          if (period === 'PM' && hour24 !== 12) {
+            hour24 += 12; // Convertir a 24 horas
+          } else if (period === 'AM' && hour24 === 12) {
+            hour24 = 0; // 12 AM es medianoche
+          }
+      
+          // Asegura que la hora esté en formato de 2 dígitos
+          const formattedHour = hour24.toString().padStart(2, '0');
+          const formattedMinute = minutes.padStart(2, '0');
+          const formattedSecond = seconds.padStart(2, '0');
+          
+          // Formatear la fecha para Date.parse
+          return `${year}-${month}-${day}T${formattedHour}:${formattedMinute}:${formattedSecond}`;
+      });
+      
+      
+      const dt = new Date(Date.parse(argumentParse));
+      const hour = dt.getHours();
 
-    // Convertir a formato de hora AM/PM
-    const formattedTime = savedTime.replace('a. m.', 'AM').replace('p. m.', 'PM');
-
-    // Crear objeto Date con la cadena de tiempo
-    const dt = new Date(Date.parse(formattedTime.replace(/(\d{2}\/\d{2}\/\d{4}), (\d{2}):(\d{2}):(\d{2}) (AM|PM)/, '$1 $2:$3:$4 $5')));
-    const hour = dt.getHours();
-
-    // Clasificar en el rango correspondiente
-    if (hour >= 0 && hour < 8) {
-      counts[0]++;
-    } else if (hour >= 8 && hour < 16) {
-      counts[1]++;
-    } else {
-      counts[2]++;
-    }
+      // Clasificar en el rango correspondiente
+      if (hour >= 0 && hour < 8) {
+          counts[0]++;
+      } else if (hour >= 8 && hour < 16) {
+          counts[1]++;
+      } else {
+          counts[2]++;
+      }
+      console.log(counts)
   });
 
   return { labels, counts };

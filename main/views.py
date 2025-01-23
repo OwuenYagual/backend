@@ -1,7 +1,9 @@
 from django.shortcuts import render
+from collections import Counter
 # Importe requests y json
 import requests
 import json
+
 
 # Create your views here.
 from django.http import HttpResponse
@@ -17,19 +19,40 @@ def index(request):
     response_dict = json.loads(response_http.content)
 
     print("Endpoint ", url)
-    print("Response ", response_dict)
+    #print("Response ", response_dict)
 
     # Respuestas totales
     total_responses = len(response_dict.keys())
 
     # Valores de la respuesta
     responses = response_dict.values()
-        
+    #print('Responses: ', responses)
+
+
+    #Fecha del primer elemento de la respuesta
+    first_responses = next(iter(response_dict.items()))[1]['saved']
+
+    #Fecha de la ultima respuesta
+    last_responses = list(response_dict.items())[-1][1]['saved']
+
+    #Fecha con mas respuestas
+    dates = [row['saved'].split(',')[0] for row in responses]
+
+    # Contamos las ocurrencias de cada fecha
+    date_counts = Counter(dates)
+
+    # Determinamos el día con más respuestas
+    high_rate_responses, high_rate_responses_count = date_counts.most_common(1)[0]
+
     # Objeto con los datos a renderizar
     data = {
         'title': 'Landing - Dashboard',
         'total_responses': total_responses,
-        'responses': responses
+        'responses': responses,
+        'first_responses': first_responses,
+        'last_responses': last_responses,
+        'high_rate_responses': high_rate_responses,
+        'high_rate_responses_count': high_rate_responses_count
     }
 
 
