@@ -22,7 +22,15 @@ def index(request):
 
     # Petición al REST API
     response_http = requests.get(url)
-    response_dict = json.loads(response_http.content)
+
+    # Verificar si la respuesta es exitosa y si el contenido es JSON
+    if response_http.status_code == 200:
+        try:
+            response_dict = response_http.json()  # Usa .json() en lugar de json.loads()
+        except json.JSONDecodeError:
+            return HttpResponse("Error: La respuesta no es un JSON válido", status=500)
+    else:
+        return HttpResponse(f"Error: Falló la petición al API con el código {response_http.status_code}", status=response_http.status_code)
 
     print("Endpoint ", url)
     #print("Response ", response_dict)
